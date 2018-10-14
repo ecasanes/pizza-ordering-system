@@ -1,0 +1,41 @@
+<div>
+  
+    <div class="row" ng-repeat="pizzaCategory in pizzaList">
+        <table class="table table-bordered">
+            <tr>
+              <td>{{ pizzaCategory.name }}</td>
+              <td ng-repeat="size in pizzaCategory.sizes">{{size}}</td>
+              <td>Qty</td>
+              <td>Subtotal</td>
+              <td>Add</td>
+              <td>Remove</td>
+            </tr>
+            <tr ng-repeat="pizza in pizzaCategory.pizzas">
+              <td>{{ pizza.name }}</td>
+              <td ng-repeat="size in pizza.sizes">
+                <input type="radio" name="size_{{$parent.$index}}" 
+                value="{{size.inches}}" ng-model="pizza.selectedSize"
+                ng-change="radioSelected(pizza, size.price)">
+              </td>
+              <td>
+                <input type="number" name="qty_{{$index}}" 
+                ng-model="pizza.qty" ng-change="qtyChanged(pizza)">
+              </td>
+              <td>
+                {{pizza.subTotal}}
+              </td>
+              <td>
+                <button ng-if="!pizza.added" ng-click="add(pizza)">Add</button>
+                <button ng-if="pizza.added" ng-click="update(pizza)">Update</button>
+              </td>
+              <td>
+                <button ng-click="remove(pizza)">Remove</button>
+              </td>
+            </tr>
+          </table>
+    </div>
+
+    {{ grandTotal }}
+    
+
+  </div>
