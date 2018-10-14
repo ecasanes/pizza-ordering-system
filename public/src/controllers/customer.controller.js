@@ -1,8 +1,11 @@
 'use strict';
 
-app.controller('customerCtrl', function ($scope, $rootScope) {
+app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$timeout', function ($scope, $rootScope, productsService, $timeout) {
 
   console.log('customer controller init', $rootScope);
+  console.log('product service from customer ctrl: ', productsService);
+
+  $scope.pizzaList = [];
 
   let calculateSubTotal = (price, qty) => {
     console.log('price: ', price);
@@ -35,57 +38,109 @@ app.controller('customerCtrl', function ($scope, $rootScope) {
 
   }
 
-  $scope.pizzaList = [{
-    name: 'Category 1',
-    sizes: [10, 14, 18],
-    pizzas: [{
-        name: 'pizza 1',
-        qty: 0,
-        subTotal: 0,
-        selectedSize: null,
-        currentPrice: 0,
-        added: false,
-        sizes: [{
-            inches: 10,
-            price: 100
-          },
-          {
-            inches: 14,
-            price: 200
-          },
-          {
-            inches: 18,
-            price: 300
-          }
-        ]
-      },
-      {
-        name: 'pizza 2',
-        qty: 0,
-        subTotal: 0,
-        selectedSize: null,
-        currentPrice: 0,
-        added: false,
-        sizes: [{
-            inches: 10,
-            price: 150
-          },
-          {
-            inches: 14,
-            price: 250
-          },
-          {
-            inches: 18,
-            price: 350
-          }
-        ]
-      }
-    ]
-  }]
+  let getProductSizes = () => {
+    return productsService.getAllProductSizes();
+  }
+
+  let getCategoriesWithSizes = (categories, sizes) => {
+
+    console.log('product categories: ', categories[0]);
+    let categoriesWithSizes = [];
+
+    for(let i=0;i<categories.length;i++){
+      let category = categories[i];
+      category.sizes = sizes;
+      categoriesWithSizes.push(category);
+    }
+
+    console.log('categories with sizes: ', categoriesWithSizes);
+
+    return categoriesWithSizes;
+    
+
+  }
+
+  let getProductsByCategory = async (categoryId) => {
+
+    let products = await productsService.filterProducts({categoryId});
+    let productsWithPrices = [];
+
+    for(let i = 0; i<products.length; i++){
+
+      const product = products[i];
+      const productId = product.id;
+
+      product.qty = 0;
+      product.subTotal = 0;
+      product.currentPrice = 0;
+      product.selectedSize = null;
+      product.added = false;
+      product.pricesPerSize = await productsService.getProductPricesPerSize({productId});
+
+      productsWithPrices.push(product);
+
+    }
+
+    return productsWithPrices;
+
+  }
+
+  // let getProductsPerCategory = async (categories) => {
+
+  //   let categoriesWithProducts = [];
+
+  //   for(let i=0;i<categories.length;i++){
+  //     let category = categories[i];
+  //     category.pizzas = await productsService.filterProducts({categoryId: categories.id});
+  //     categoriesWithProducts.push(category);
+  //   }
+
+  //   return categoriesWithProducts;
+
+  // }
+
+  let getCategoriesWithProducts = async (categories) => {
+
+    let categoriesWithProducts = [];
+
+    for(let i=0;i<categories.length;i++){
+      let category = categories[i];
+      category.pizzas = await getProductsByCategory(category.id);
+      categoriesWithProducts.push(category);
+    }
+
+    return categoriesWithProducts;
+
+  }
+
+  let getAllProductsByCategory = async () => {
+
+    let categories = await productsService.getAllCategories();
+    const productSizes = await getProductSizes();
+    
+    categories = getCategoriesWithSizes(categories, productSizes);
+
+    let categoriesWithProducts = await getCategoriesWithProducts(categories);
+
+    $scope.pizzaList = categoriesWithProducts;
+
+    console.log('categoriesWithProducts: ', categoriesWithProducts);
+
+    $timeout(function(){
+      $scope.pizzaList = categoriesWithProducts;
+    }, 1000);
+
+    jQuery('[data-toggle="tooltip"]').tooltip()
+
+  }
 
   $scope.grandTotal = 0;
 
   $scope.radioSelected = (pizza, price) => {
+
+    if(pizza.qty === 0){
+      pizza.qty = 1;
+    }
 
     pizza.currentPrice = price;
     // console.log('pizza from radio: ', pizza);
@@ -131,4 +186,7 @@ app.controller('customerCtrl', function ($scope, $rootScope) {
 
   };
 
-});
+  // init
+  getAllProductsByCategory();
+
+}]);

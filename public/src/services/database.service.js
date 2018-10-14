@@ -2,7 +2,53 @@
 
 app.service('databaseService', function ($rootScope) {
 
-  function executeQuery(transaction, sql, data = [], successFn = null, errorFn = null) {
+  function select(sql, data = []){
+
+    return executeQueryPromise(sql, data = [])
+      .then(
+        (result) => {
+
+          if(!result){
+            return [];
+          }
+
+          if(!result.rows){
+            return [];
+          }
+
+          return result.rows;
+        }
+      );
+
+  }
+
+  function executeQueryPromise(sql, data = []) {
+
+    return new Promise(
+      (resolve, reject) => {
+        executeQuery(sql, [],
+          function(sqlTransaction, result){
+            resolve(result);
+          },
+          function(sqlTransaction, error){
+            reject(error);
+          });
+      }
+    );
+
+  }
+
+  function executeQuery(sql, data = [], successFn = null, errorFn = null) {
+
+    $rootScope.db.transaction(function(transaction) {
+
+      executeTransactionQuery(transaction, sql, data, successFn, errorFn);
+
+    });
+
+  }
+
+  function executeTransactionQuery(transaction, sql, data = [], successFn = null, errorFn = null) {
 
     transaction.executeSql(
       sql,
@@ -31,11 +77,12 @@ app.service('databaseService', function ($rootScope) {
             data = query.data;
           }
 
-          executeQuery(transaction, query.sql, data,
+          executeTransactionQuery(transaction, query.sql, data,
             function (sqlTransaction, sqlResultSet) {
               // console.log('query executed: ', sqlResultSet);
             },
             function (sqlTransaction, sqlError) {
+              // TODO: remove on production
               console.log('query error: ', sqlError);
             }
           );
@@ -50,5 +97,7 @@ app.service('databaseService', function ($rootScope) {
 
   this.executeQueries = executeQueries;
   this.executeQuery = executeQuery;
+  this.executeQueryPromise = executeQueryPromise;
+  this.select = select;
 
 });

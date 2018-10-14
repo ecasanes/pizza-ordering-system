@@ -1,0 +1,22 @@
+<tr ng-repeat="pizza in products">
+  <td>{{ pizza.name }}</td>
+  <td ng-if="pizza.pricesPerSize.length > 0" ng-repeat="size in pizza.pricesPerSize">
+    <input type="radio" name="size_{{pizza.id}}" 
+    value="{{size.inches}}" ng-model="pizza.selectedSize"
+    ng-change="radioSelected(pizza, size.price)">
+  </td>
+  <td>
+    <input type="number" name="qty_{{pizza.id}}" 
+    ng-model="pizza.qty" ng-change="qtyChanged(pizza)">
+  </td>
+  <td>
+    {{pizza.subTotal}}
+  </td>
+  <td>
+    <button ng-if="!pizza.added" ng-click="add(pizza)">Add</button>
+    <button ng-if="pizza.added" ng-click="update(pizza)">Update</button>
+  </td>
+  <td>
+    <button ng-click="remove(pizza)">Remove</button>
+  </td>
+</tr>
