@@ -15,7 +15,27 @@ app.service('transactionsService', function(databaseService) {
       sql += ` AND transactions.id = ${transactionId}`;
     }
 
-    return databaseService.select(sql);
+    return databaseService.select(sql)
+      .then(
+        (rows) => {
+
+          let newRows = [];
+
+          for(let i=0;i<rows.length;i++){
+            const row = rows[i];
+            newRows.push({
+              id: row.id,
+              subtotal: row.subtotal,
+              full_name: row.full_name,
+              total: row.total,
+              created_at: row.created_at
+            });
+          }
+
+          return newRows;
+
+        }
+      )
 
   }
 
@@ -25,8 +45,17 @@ app.service('transactionsService', function(databaseService) {
     const {transactionId} = filter;
 
     let sql = `
-      SELECT * FROM transaction_items
-      INNER JOIN transactions on transactions.id = transaction_items.transaction_id
+      SELECT 
+      transaction_items.*,
+      product_sizes.inches,
+      products_with_sizes.price,
+      products.name,
+      product_categories.name as product_category_name
+      FROM transaction_items
+      INNER JOIN products_with_sizes ON products_with_sizes.id = transaction_items.product_id
+      INNER JOIN products ON products.id = products_with_sizes.product_id
+      INNER JOIN product_sizes ON product_sizes.id = products_with_sizes.product_size_id
+      INNER JOIN product_categories ON product_categories.id = products.product_category_id
       WHERE transaction_items.id IS NOT NULL
     `;
 
@@ -34,13 +63,37 @@ app.service('transactionsService', function(databaseService) {
       sql += ` AND transaction_items.transaction_id = ${transactionId}`;
     }
 
-    return databaseService.select(sql);
+    return databaseService.select(sql)
+    .then(
+      (rows) => {
+
+        let newRows = [];
+
+        for(let i=0;i<rows.length;i++){
+          const row = rows[i];
+          newRows.push({
+            transaction_id: row.id,
+            subtotal: row.subtotal,
+            price: row.price,
+            name: row.name,
+            product_category_name: row.product_category_name,
+            inches: row.inches,
+            qty: row.qty
+          });
+        }
+
+        return newRows;
+
+      }
+    )
 
   }
 
-  function saveTransaction(items, grandTotal) {
+  function saveTransaction(items, grandTotal, formData) {
 
-    return createTransaction(grandTotal)
+    const { fullName, mobileNumber } = formData;
+
+    return createTransaction(grandTotal, fullName, mobileNumber)
       .then(
         (insertId) => {
           return insertTransactionItems(insertId, items);
@@ -49,13 +102,15 @@ app.service('transactionsService', function(databaseService) {
 
   }
 
-  function createTransaction(grandTotal){
+  function createTransaction(grandTotal, fullName, mobileNumber){
 
     // const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     let sql = `
-      INSERT INTO transactions (total) VALUES (${grandTotal})
+      INSERT INTO transactions (total, full_name, mobile_number) VALUES (${grandTotal}, '${fullName}', '${mobileNumber}')
     `;
+
+    console.log('sql: ', sql);
 
     return databaseService.insert(sql);
 
@@ -67,15 +122,17 @@ app.service('transactionsService', function(databaseService) {
 
     let sqlValuesArr = transactionItems.map(
       (item) => {
-        return `(${transactionId}, ${item.product_id}, ${item.subtotal})`
+        return `(${transactionId}, ${item.product_id}, ${item.qty}, ${item.subtotal})`
       }
     );
 
     let sqlValuesString = sqlValuesArr.join(',');
 
     let sql = `
-      INSERT INTO transaction_items (transaction_id, product_id, subtotal) VALUES ${sqlValuesString}
+      INSERT INTO transaction_items (transaction_id, product_id, qty, subtotal) VALUES ${sqlValuesString}
     `;
+
+    console.log('sql: ', sql);
 
     return databaseService.insert(sql);
 
@@ -83,5 +140,7 @@ app.service('transactionsService', function(databaseService) {
   }
 
   this.saveTransaction = saveTransaction;
+  this.filterTransactionItems = filterTransactionItems;
+  this.filterTransactions = filterTransactions;
 
 });

@@ -1,1 +1,68 @@
-hello world
+<div class="staff-container">
+
+  <div class="row">
+    <div class="col-md">
+
+      <div ng-repeat="transaction in transactions" class="card transaction-card">
+
+        <div class="row">
+          <div class="col-md">
+            #{{transaction.id}}
+          </div>
+        </div>
+
+        <div class="row info-container">
+          <div class="col-md">
+            <div class="title-content">
+                Customer Name:
+                <span class="content">
+                    {{transaction.full_name}}
+                </span>
+            </div>
+          </div>
+          <div class="col-md">
+              <div class="title-content">
+                  Date:
+                  <span class="content">
+                      {{transaction.created_at | dateToISO | date:'short'}}
+                  </span>
+              </div>
+            </div>
+        </div>
+
+        <table class="table transaction-items-container">
+
+          <tr>
+            <td>Product Name</td>
+            <td>Category</td>
+            <td>Size</td>
+            <td>Qty</td>
+            <td>SubTotal</td>
+          </tr>
+
+          <tr ng-repeat="item in transaction.items">
+            <td>{{item.name}}</td>
+            <td>{{item.product_category_name}}</td>
+            <td>{{item.inches}}</td>
+            <td>{{item.qty}}</td>
+            <td>{{item.subtotal | number : 2}}</td>
+          </tr>
+
+
+
+        </table>
+
+        <div class="row computations-container">
+          <div class="col-md">
+            <div class="transaction-total-container">
+              Total: <span class="total-value">{{transaction.total | number: 2}}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      
+    </div>
+  </div>
+</div>

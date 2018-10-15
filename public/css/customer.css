@@ -1,0 +1,116 @@
+.category-table .name-column{
+  width: 300px;
+  text-transform:uppercase;
+  font-size:21px;
+  font-weight:bold;
+}
+
+.category-table .qty-column{
+  width:60px;
+  text-transform:uppercase;
+  
+}
+
+.category-table .size-column{
+  width:50px;
+  
+}
+
+.category-table .subtotal-column{
+  color: blue;
+  font-weight: bold;
+}
+
+.category-table .category-row{
+  background-color:#ffffd9;
+  color:#773900;
+}
+
+.category-table .product-row .product-name{
+  color:green;
+  text-transform:uppercase;
+  font-size:18px;
+}
+
+.category-table .product-row .product-description{
+  color:green;
+  font-size: 12px;
+}
+
+.category-table .product-row .qty-input{
+  width: 50px;
+}
+
+.category-table button{
+  border: 1px solid green;
+  background: #f8ffdf;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.category-table button:disabled{
+  background: #ececec;
+  color: #afacac;
+  border: 1px solid #cccccc;  
+}
+
+.info-container{
+  margin-top:20px;
+}
+
+.total-container{
+  background: #e8e8e8;
+  padding-right:10px;
+}
+
+.total-container .label{
+  color:green;
+  font-weight:bold;
+  text-transform: uppercase;
+  text-align:right;
+  padding-bottom:10px;
+}
+
+.total-container .grand-total-box{
+  margin:0 0 10px 45px;
+  background: white;
+  padding: 5px 5px;
+  text-align: right;
+  font-weight: bold;
+  font-size: 23px;
+}
+
+.total-container .currency-detail{
+  font-size:12px;
+  text-align:right;
+  padding-bottom:10px;
+}
+
+.instructions-container{
+  font-size:12px;
+}
+
+.instructions-container h2{
+  font-size:12px;
+  font-weight:bold;
+}
+
+.actions-container{
+  margin-bottom:10px;
+}
+
+.actions-container .action-form{
+  border:1px solid #cccccc;
+  padding:15px 10px 10px 10px;
+  border-radius:4px;
+}
+
+.actions-container .form-group input{
+  margin-left:5px;
+}
+
+.actions-container button:disabled{
+  background: #cccccc !important;
+  border:1px solid #cccccc;
+}
+

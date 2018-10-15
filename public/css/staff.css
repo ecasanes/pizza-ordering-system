@@ -1,0 +1,40 @@
+.staff-container{
+  margin-top:20px;
+}
+
+.staff-container .transaction-card{
+  padding:10px;
+  margin-bottom:20px;
+}
+
+.transaction-card .info-container{
+  padding:10px;
+}
+
+.transaction-card .info-container .title-content{
+  font-weight:bold;
+}
+
+.transaction-card .info-container .title-content .content{
+  color:green;
+  text-transform:uppercase;
+}
+
+.transaction-card .transaction-items-container{
+
+}
+
+.transaction-card .computations-container{
+  
+}
+
+.transaction-card .computations-container .transaction-total-container{
+  float:right;
+  font-weight:bold;
+  margin-right:50px;
+  font-size:21px;
+}
+
+.transaction-card .computations-container .transaction-total-container .total-value{
+  color:green;
+}

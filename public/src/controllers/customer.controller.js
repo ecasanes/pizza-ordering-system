@@ -2,13 +2,15 @@
 
 app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$timeout', 'transactionsService', '$location', function ($scope, $rootScope, productsService, $timeout, transactionsService, $location) {
 
-  console.log('customer controller init', $rootScope);
-  console.log('product service from customer ctrl: ', productsService);
-
   $scope.pizzaList = [];
   $scope.pizzas = [];
   $scope.grandTotal = 0;
   $scope.canSaveTransaction = false;
+
+  $scope.formData = {
+    fullName: '',
+    mobileNumber: null
+  };
 
   $scope.$watch('grandTotal', function(newValue, oldValue){
 
@@ -22,6 +24,20 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
     }
 
   })
+
+  let isValidInput = () => {
+
+    console.log('fullname: ', $scope.formData.fullName);
+    console.log('mobile: ', $scope.formData.mobileNumber);
+
+    if($scope.formData.fullName.trim() === '' || !$scope.formData.mobileNumber){
+      alert('please provide both fullname and mobile number');
+      return false;
+    }
+
+    return true;
+
+  }
 
   let combineAllCategoryPizzas = () => {
 
@@ -162,8 +178,6 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
 
   }
 
-  $scope.grandTotal = 0;
-
   $scope.radioSelected = (pizza, sizeDetails) => {
 
     const { price, id } = sizeDetails;
@@ -237,6 +251,12 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
 
   $scope.submitTransaction = () => {
 
+    let isValid = isValidInput();
+
+    if(!isValid){
+      return;
+    }
+
     let addedPizzas = $scope.pizzas.filter(
       (pizza) => {
         return pizza.added;
@@ -247,26 +267,29 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
       (pizza) => {
 
         if(pizza.updated){
-          const { selectedId, subTotal } = pizza;
+          const { selectedId, subTotal, qty } = pizza;
           return {
             product_id: selectedId,
-            subtotal: subTotal
+            subtotal: subTotal,
+            qty
           }
         }
 
-        const { oldSelectedId, oldSubTotal } = pizza;
+        const { oldSelectedId, oldSubTotal, oldQty } = pizza;
         return {
           product_id: oldSelectedId,
-          subtotal: oldSubTotal
+          subtotal: oldSubTotal,
+          qty: oldQty
         }
 
       }
     );
 
-    transactionsService.saveTransaction(transactionItems, $scope.grandTotal)
+    transactionsService.saveTransaction(transactionItems, $scope.grandTotal, $scope.formData)
       .then(
         () => {
           $location.path('staff');
+          $scope.$apply();
         }
       )
 

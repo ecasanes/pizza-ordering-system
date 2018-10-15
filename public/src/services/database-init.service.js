@@ -49,6 +49,8 @@ app.service('databaseInitService', function ($rootScope, databaseService) {
       CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY,
         total varchar(255) NULL,
+        full_name varchar(255) NULL,
+        mobile_number varchar(255) NULL,
         created_at TIMESTAMP DATE DEFAULT (datetime('now','localtime'))
         );
     `;
@@ -69,6 +71,7 @@ app.service('databaseInitService', function ($rootScope, databaseService) {
         id INTEGER PRIMARY KEY,
         product_id int(11) NULL,
         transaction_id int(11) NULL,
+        qty int(11) NULL,
         subtotal varchar(255) NULL,
         created_at TIMESTAMP DATE DEFAULT (datetime('now','localtime')),
         CONSTRAINT fk_transaction_items_transaction FOREIGN KEY (transaction_id) REFERENCES transactions (id) ON DELETE SET NULL,
@@ -197,8 +200,6 @@ app.service('databaseInitService', function ($rootScope, databaseService) {
     }
 
     productsWithSize = productsWithSize.concat(toppings);
-
-    console.log('whole products with sizes: ', productsWithSize);
 
     let idCounter = 1;
     let productSqlValues = productsWithSize.map(
