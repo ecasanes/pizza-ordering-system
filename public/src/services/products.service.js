@@ -11,6 +11,7 @@ app.service('productsService', function(databaseService) {
     let sql = `
       SELECT 
 
+      products_with_sizes.id,
       products_with_sizes.price,
       product_sizes.inches
 
@@ -25,8 +26,6 @@ app.service('productsService', function(databaseService) {
       sql += ` AND products_with_sizes.product_id = ${productId}`;
     }
 
-    console.log('sql: ', sql);
-
     return databaseService.select(sql)
       .then(
         (result) => {
@@ -35,6 +34,7 @@ app.service('productsService', function(databaseService) {
 
           for(let i=0;i<result.length;i++){
             pricesPerSize.push({
+              id: result[i].id,
               inches: result[i].inches,
               price: result[i].price
             });

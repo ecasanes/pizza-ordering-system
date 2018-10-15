@@ -60,6 +60,12 @@
   font-size: 13px;
 }
 
+.category-table button:disabled{
+  background: #ececec;
+  color: #afacac;
+  border: 1px solid #cccccc;
+}
+
 .info-container{
   margin-top:20px;
 }
@@ -99,6 +105,14 @@
 .instructions-container h2{
   font-size:12px;
   font-weight:bold;
+}
+
+.actions-container{
+  margin-bottom:10px;
+}
+
+.actions-container .submit-transaction-btn{
+  float:right;
 }
 
 /** CUSTOM CSS CLASSES */

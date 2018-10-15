@@ -22,6 +22,27 @@ app.service('databaseService', function ($rootScope) {
 
   }
 
+  function insert(sql, data = []){
+
+    return executeQueryPromise(sql, data = [])
+      .then(
+        (result) => {
+
+          if(!result){
+            return null;
+          }
+
+          if(!result.insertId){
+            return null;
+          }
+
+          return result.insertId;
+
+        }
+      );
+
+  }
+
   function executeQueryPromise(sql, data = []) {
 
     return new Promise(
@@ -82,8 +103,8 @@ app.service('databaseService', function ($rootScope) {
               // console.log('query executed: ', sqlResultSet);
             },
             function (sqlTransaction, sqlError) {
-              // TODO: remove on production
-              console.log('query error: ', sqlError);
+              // NOTE: remove on production
+              // console.log('query error: ', sqlError);
             }
           );
           
@@ -99,5 +120,6 @@ app.service('databaseService', function ($rootScope) {
   this.executeQuery = executeQuery;
   this.executeQueryPromise = executeQueryPromise;
   this.select = select;
+  this.insert = insert;
 
 });

@@ -1,66 +1,73 @@
 <div class="customer-container">
-  
+
   <div ng-if="pizzaList.length <= 0" class="loading">Loading...</div>
 
-   <div class="row info-container" ng-if="pizzaList.length > 0">
-     <div class="col-md no-padding">
-       <div class="instructions-container">
-         <h2>Instructions</h2>
-         <ol>
-           <li>Move mouse over the radio buttons to see the unit price</li>
-           <li>Enter the quantity to order</li>
-           <li>Click the Add button to include the items to your cart, REMOVE to delete items from the cart.</li>
-           <li>Click UPDATE if have made changes in your orders</li>
-         </ol>
-       </div>
-     </div>
-     <div class="col-md no-padding">
-        <div class="total-container">
-            <div class="label">Total Purchase Order</div>
-            <div class="grand-total-box">{{ grandTotal | number: 2}}</div>
-            <div class="currency-detail">All sales are in Philippine Peso</div>
-        </div>
-     </div>
-   </div>
+  <div class="row info-container" ng-if="pizzaList.length > 0">
+    <div class="col-md no-padding">
+      <div class="instructions-container">
+        <h2>Instructions</h2>
+        <ol>
+          <li>Move mouse over the radio buttons to see the unit price</li>
+          <li>Enter the quantity to order</li>
+          <li>Click the Add button to include the items to your cart, REMOVE to delete items from the cart.</li>
+          <li>Click UPDATE if have made changes in your orders</li>
+        </ol>
+      </div>
+    </div>
+    <div class="col-md no-padding">
+      <div class="total-container">
+        <div class="label">Total Purchase Order</div>
+        <div class="grand-total-box">{{ grandTotal | number: 2}}</div>
+        <div class="currency-detail">All sales are in Philippine Peso</div>
+      </div>
+    </div>
+  </div>
 
-    <div class="row" ng-if="pizzaList.length > 0" ng-repeat="pizzaCategory in pizzaList">
-        <table class="category-table table table-bordered">
-            <tr class="category-row">
-              <td class="name-column">{{ pizzaCategory.name }}</td>
-              <td class="size-column" ng-if="pizzaCategory.sizes.length > 0" ng-repeat="size in pizzaCategory.sizes">{{size}}''</td>
-              <td class="qty-column">Qty</td>
-              <td>Sub Total</td>
-              <td>Add</td>
-              <td>Remove</td>
-            </tr>
-            <tr class="product-row" ng-if="pizzaCategory.pizzas.length > 0" ng-repeat="pizza in pizzaCategory.pizzas">
-              <td>
-                  <h2 class="product-name">{{ pizza.name }}</h2>
-                  <p class="product-description">{{ pizza.description }}</p>
-              </td>
-              <td ng-if="pizza.pricesPerSize.length > 0" ng-repeat="size in pizza.pricesPerSize">
-                <input type="radio" name="size_{{pizza.id}}" data-toggle="tooltip" data-placement="top" title="{{size.price | number:2}}"
-                value="{{size.inches}}" ng-model="pizza.selectedSize"
-                ng-change="radioSelected(pizza, size.price)">
-              </td>
-              <td>
-                <input class="qty-input" ng-if="pizza.product_category_code != 'toppings'" type="number" name="qty_{{pizza.id}}" 
-                ng-model="pizza.qty" ng-change="qtyChanged(pizza)">
-                <span ng-if="pizza.product_category_code == 'toppings'">1</span>
-              </td>
-              <td class="subtotal-column">
-                {{pizza.subTotal | number : 2}}
-              </td>
-              <td>
-                <button ng-if="!pizza.added" ng-click="add(pizza)">Add</button>
-                <button ng-if="pizza.added" ng-click="update(pizza)">Update</button>
-              </td>
-              <td>
-                <button ng-click="remove(pizza)">Remove</button>
-              </td>
-            </tr>
-          </table>
+  <div class="row actions-container" ng-if="pizzaList.length > 0 && canSaveTransaction">
+    <div class="col-md"></div>
+    <div class="col-md no-padding">
+      <button class="submit-transaction-btn btn btn-success" ng-click="submitTransaction()">Submit Order</button>
     </div>
     
-
   </div>
+
+  <div class="row" ng-if="pizzaList.length > 0" ng-repeat="pizzaCategory in pizzaList">
+    <table class="category-table table table-bordered">
+      <tr class="category-row">
+        <td class="name-column">{{ pizzaCategory.name }}</td>
+        <td class="size-column" ng-if="pizzaCategory.sizes.length > 0" ng-repeat="size in pizzaCategory.sizes">{{size}}''</td>
+        <td class="qty-column">Qty</td>
+        <td>Sub Total</td>
+        <td>Add</td>
+        <td>Remove</td>
+      </tr>
+      <tr class="product-row" ng-if="pizzaCategory.pizzas.length > 0" ng-repeat="pizza in pizzaCategory.pizzas">
+        <td>
+          <h2 class="product-name">{{ pizza.name }}</h2>
+          <p class="product-description">{{ pizza.description }}</p>
+        </td>
+        <td ng-if="pizza.pricesPerSize.length > 0" ng-repeat="size in pizza.pricesPerSize">
+          <input type="radio" name="size_{{pizza.id}}" data-toggle="tooltip" data-placement="top" title="{{size.price | number:2}}" value="{{size.inches}}" data-id="{{size.id}}"
+          ng-model="pizza.selectedSize" ng-change="radioSelected(pizza, size)">
+        </td>
+        <td>
+          <input class="qty-input" ng-if="pizza.product_category_code != 'toppings'" type="number" name="qty_{{pizza.id}}"
+            ng-model="pizza.qty" ng-change="qtyChanged(pizza)">
+          <span ng-if="pizza.product_category_code == 'toppings'">1</span>
+        </td>
+        <td class="subtotal-column">
+          {{pizza.subTotal | number : 2}}
+        </td>
+        <td>
+          <button ng-if="!pizza.added" ng-disabled="pizza.subTotal <= 0" ng-click="add(pizza)">Add</button>
+          <button ng-if="pizza.added" ng-click="update(pizza)">Update</button>
+        </td>
+        <td>
+          <button ng-click="remove(pizza)">Remove</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+
+</div>

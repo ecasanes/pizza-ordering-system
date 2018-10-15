@@ -1,11 +1,41 @@
 'use strict';
 
-app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$timeout', function ($scope, $rootScope, productsService, $timeout) {
+app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$timeout', 'transactionsService', '$location', function ($scope, $rootScope, productsService, $timeout, transactionsService, $location) {
 
   console.log('customer controller init', $rootScope);
   console.log('product service from customer ctrl: ', productsService);
 
   $scope.pizzaList = [];
+  $scope.pizzas = [];
+  $scope.grandTotal = 0;
+  $scope.canSaveTransaction = false;
+
+  $scope.$watch('grandTotal', function(newValue, oldValue){
+
+    console.log('grand total old: ', oldValue);
+    console.log('grand total new: ', newValue);
+
+    if(newValue > 0){
+      $scope.canSaveTransaction = true;
+    }else{
+      $scope.canSaveTransaction = false;
+    }
+
+  })
+
+  let combineAllCategoryPizzas = () => {
+
+    let pizzas = [];
+
+    $scope.pizzaList.forEach(
+      (pizzaCategory) => {
+        pizzas = pizzas.concat(pizzaCategory.pizzas);
+      }
+    );
+
+    $scope.pizzas = pizzas;
+
+  }
 
   let calculateSubTotal = (price, qty) => {
     console.log('price: ', price);
@@ -16,17 +46,10 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
   let calculateGrandTotal = () => {
 
     let grandTotal = 0;
-    let pizzas = [];
 
-    $scope.pizzaList.forEach(
-      (pizzaCategory) => {
-        pizzas = pizzas.concat(pizzaCategory.pizzas);
-      }
-    );
+    combineAllCategoryPizzas();
 
-    console.log('pizzas: ', pizzas);
-
-    pizzas.forEach(
+    $scope.pizzas.forEach(
       (pizza) => {
         if (pizza.added) {
           grandTotal += pizza.subTotal;
@@ -85,20 +108,6 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
 
   }
 
-  // let getProductsPerCategory = async (categories) => {
-
-  //   let categoriesWithProducts = [];
-
-  //   for(let i=0;i<categories.length;i++){
-  //     let category = categories[i];
-  //     category.pizzas = await productsService.filterProducts({categoryId: categories.id});
-  //     categoriesWithProducts.push(category);
-  //   }
-
-  //   return categoriesWithProducts;
-
-  // }
-
   let getCategoriesWithProducts = async (categories) => {
 
     let categoriesWithProducts = [];
@@ -134,25 +143,50 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
 
   }
 
-  $scope.grandTotal = 0;
+  let setOldPizzaValues = (pizza) => {
 
-  $scope.radioSelected = (pizza, price) => {
+    pizza.oldPrice = pizza.currentPrice;
+    pizza.oldQty = pizza.qty;
+    pizza.oldSelectedId = pizza.selectedId;
+    pizza.oldSelectedSize = pizza.selectedSize;
+    pizza.oldSubTotal = pizza.subTotal;
+    pizza.updated = false;
 
-    if(pizza.qty === 0){
+  }
+
+  let normalizeQty = (pizza) => {
+
+    if(pizza.qty <= 0){
       pizza.qty = 1;
     }
 
-    pizza.currentPrice = price;
-    // console.log('pizza from radio: ', pizza);
-    const subTotal = calculateSubTotal(price, pizza.qty);
-    pizza.subTotal = subTotal;
+  }
 
-    console.log('pizza subtotal: ', pizza.subTotal);
+  $scope.grandTotal = 0;
+
+  $scope.radioSelected = (pizza, sizeDetails) => {
+
+    const { price, id } = sizeDetails;
+
+    setOldPizzaValues(pizza);
+    normalizeQty(pizza);
+
+    const subTotal = calculateSubTotal(price, pizza.qty);
+
+    if(pizza.subTotal <= 0){
+      pizza.updated = true;
+    }
+
+    pizza.currentPrice = price;
+    pizza.subTotal = subTotal;
+    pizza.selectedId = id;
 
   };
 
   $scope.qtyChanged = (pizza) => {
-    // console.log('pizza from qty: ', pizza);
+
+    setOldPizzaValues(pizza);
+    normalizeQty(pizza);
 
     const subTotal = calculateSubTotal(pizza.currentPrice, pizza.qty);
     pizza.subTotal = subTotal;
@@ -164,11 +198,14 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
   $scope.add = (pizza) => {
 
     pizza.added = true;
+
     calculateGrandTotal();
 
   };
 
   $scope.update = (pizza) => {
+
+    pizza.updated = true;
 
     calculateGrandTotal();
 
@@ -177,14 +214,63 @@ app.controller('customerCtrl', ['$scope', '$rootScope', 'productsService', '$tim
   $scope.remove = (pizza) => {
 
     pizza.added = false;
+    pizza.updated = false;
+
     pizza.qty = 0;
+    pizza.oldQty = 0;
+
     pizza.selectedSize = null;
+    pizza.oldSelectedSize = null;
+
+    pizza.selectedId = null;
+    pizza.oldSelectedId = null;
+
     pizza.currentPrice = 0;
+    pizza.oldPrice = 0;
+
     pizza.subTotal = 0;
+    pizza.oldSubTotal = 0;
 
     calculateGrandTotal();
 
   };
+
+  $scope.submitTransaction = () => {
+
+    let addedPizzas = $scope.pizzas.filter(
+      (pizza) => {
+        return pizza.added;
+      }
+    );
+
+    let transactionItems = addedPizzas.map(
+      (pizza) => {
+
+        if(pizza.updated){
+          const { selectedId, subTotal } = pizza;
+          return {
+            product_id: selectedId,
+            subtotal: subTotal
+          }
+        }
+
+        const { oldSelectedId, oldSubTotal } = pizza;
+        return {
+          product_id: oldSelectedId,
+          subtotal: oldSubTotal
+        }
+
+      }
+    );
+
+    transactionsService.saveTransaction(transactionItems, $scope.grandTotal)
+      .then(
+        () => {
+          $location.path('staff');
+        }
+      )
+
+  }
 
   // init
   getAllProductsByCategory();
